@@ -84,23 +84,23 @@
 <img src="https://user-images.githubusercontent.com/32674906/138277825-d5bf4274-0e70-4d23-a6d9-2bc226cd0885.png" width="1000px" height="500px"/>
 
 #### 役割管理
-<img src="https://user-images.githubusercontent.com/32674906/150061879-f8963a17-c61f-45d0-a7a3-8b2794033260.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062388-d596bed7-b28e-442a-9db5-ca4fbf25f59d.png" width="1000px" height="500px"/>
 
 #### 部門管理
-<img src="https://user-images.githubusercontent.com/32674906/150061928-7351d8c3-b30b-47a1-9f8d-d0b1b7a8bcc0.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062400-1859dd54-08ea-4e10-8b10-1441d42b110f.png" width="1000px" height="500px"/>
 
 ### オンラインオフィス
 #### 承認事項
-<img src="https://user-images.githubusercontent.com/32674906/150062056-df18e5f6-a436-442a-bd43-dd98a0280717.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062560-be185fcd-71d0-460f-8fe5-330eed006c5d.png" width="1000px" height="500px"/>
 
 #### 罰金制度
-<img src="https://user-images.githubusercontent.com/32674906/150062099-feb5bccf-9463-4ccb-9c32-2cb431dfa616.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062534-8d8fabc7-f024-4d03-8355-f824dfbd8bab.png" width="1000px" height="500px"/>
 <img src="https://user-images.githubusercontent.com/32674906/150062147-8092a3b7-f357-4e1d-887b-6885b6f2341a.png" width="1000px" height="500px"/>
 <img src="https://user-images.githubusercontent.com/32674906/150062169-bc5c5516-f068-49d8-8e48-d547aaea516d.png" width="1000px" height="500px"/>
 
 #### 休暇申請
-<img src="https://user-images.githubusercontent.com/32674906/150062206-440f545c-09e5-4f3f-b3ef-30b8bdd636ff.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062476-865687a3-40b9-4668-a2b9-96c365333487.png" width="1000px" height="500px"/>
 <img src="https://user-images.githubusercontent.com/32674906/150062239-2ae0012c-8223-4815-b6bb-9dc06a21bc82.png" width="1000px" height="500px"/>
 
 #### 立替金精算
-<img src="https://user-images.githubusercontent.com/32674906/150062285-7155629c-1f40-4bf3-b273-4d26f020526d.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062437-e0e7ee99-3efd-40df-b4ce-fa41fc537c0a.png" width="1000px" height="500px"/>
