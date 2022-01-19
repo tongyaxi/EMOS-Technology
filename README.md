@@ -1,7 +1,4 @@
 # EMOSオンライン勤務システム
-SpringBoot+Vue3 项目实战，打造企业级在线办公系统
-流程完整、功能齐全、模块多样，真实可用的在线办公系统
-从申请、审批到归档，从工作流程的设计到云服务的使用一次掌握
 
 <img src="https://user-images.githubusercontent.com/32674906/132113256-c1ec92a3-7e73-4803-aea3-2df42a6b63ef.png" width="800px" height="300px"/>
 
@@ -85,3 +82,25 @@ SpringBoot+Vue3 项目实战，打造企业级在线办公系统
 ### 組織マネジメント
 #### ユーザー管理
 <img src="https://user-images.githubusercontent.com/32674906/138277825-d5bf4274-0e70-4d23-a6d9-2bc226cd0885.png" width="1000px" height="500px"/>
+
+#### 役割管理
+<img src="https://user-images.githubusercontent.com/32674906/150061879-f8963a17-c61f-45d0-a7a3-8b2794033260.png" width="1000px" height="500px"/>
+
+#### 部門管理
+<img src="https://user-images.githubusercontent.com/32674906/150061928-7351d8c3-b30b-47a1-9f8d-d0b1b7a8bcc0.png" width="1000px" height="500px"/>
+
+### オンラインオフィス
+#### 承認事項
+<img src="https://user-images.githubusercontent.com/32674906/150062056-df18e5f6-a436-442a-bd43-dd98a0280717.png" width="1000px" height="500px"/>
+
+#### 罰金制度
+<img src="https://user-images.githubusercontent.com/32674906/150062099-feb5bccf-9463-4ccb-9c32-2cb431dfa616.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062147-8092a3b7-f357-4e1d-887b-6885b6f2341a.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062169-bc5c5516-f068-49d8-8e48-d547aaea516d.png" width="1000px" height="500px"/>
+
+#### 休暇申請
+<img src="https://user-images.githubusercontent.com/32674906/150062206-440f545c-09e5-4f3f-b3ef-30b8bdd636ff.png" width="1000px" height="500px"/>
+<img src="https://user-images.githubusercontent.com/32674906/150062239-2ae0012c-8223-4815-b6bb-9dc06a21bc82.png" width="1000px" height="500px"/>
+
+#### 立替金精算
+<img src="https://user-images.githubusercontent.com/32674906/150062285-7155629c-1f40-4bf3-b273-4d26f020526d.png" width="1000px" height="500px"/>
