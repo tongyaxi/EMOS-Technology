@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emos.api.db.dao.TbMeetingDao">
+    <select id="searchOfflineMeetingByPage" parameterType="HashMap" resultType="HashMap">
+        select
+        mr.name,
+        temp.meeting
+        from tb_meeting_room mr
+        left join
+             (select
+              place,
+              concat("[",
+                GROUP_CONCAT(
+                  JSON_OBJECT(
+                  'start',DATE_FORMAT(start,'%H:%i'),
+                  'end',DATE_FORMAT(end,'%H:%i'),
+                  'status',`status`,
+                  'time',ROUND(TIMESTAMPDIFF(MINUTE,CONCAT(date," ",start),CONCAT(date," ",end))/30))),
+              "]") as meeting
+              from tb_meeting
+              where
+              type = 2 and `status` != 2 and date = #{date}
+              <if test="mold == '自分会議'">
+                  and JSON_CONTAINS(members, CAST(#{userId} as char))
+              </if>
+              group by place) temp
+        on mr.name = temp.place
+        where mr.status = 1
+        limit #{start},#{length}
+    </select>
+
+    <select id="searchOfflineMeetingCount" parameterType="HashMap" resultType="long">
+        select count(*)
+        from tb_meeting_room
+        where status=1
+    </select>
+
+    <select id="searchMeetingMembersInSameDept" parameterType="String" resultType="boolean">
+        select
+            if(count(distinct u.dept_id)=1, true, false ) as bool
+        from tb_meeting m
+        join tb_user u on JSON_CONTAINS (m.members, CAST(u.id as char))
+        where m.uuid = #{uuid} and u.status = 1
+    </select>
+
+    <update id="updateMeetingInstanceId" parameterType="HashMap">
+        update tb_meeting
+        set instance_id = #{instanceId}
+        where uuid = #{uuid}
+    </update>
+
+    <insert id="insert" parameterType="com.example.emos.api.db.pojo.TbMeeting">
+        insert into tb_meeting
+        set title = #{title},
+        <if test="uuid!=null">
+            uuid = #{uuid},
+        </if>
+        `date` = #{date},
+        creator_id = #{creatorId},
+        <if test="place!=null">
+            place = #{place},
+        </if>
+        `start` = #{start},
+        `end` = #{end},
+        `type` = #{type},
+        members = #{members},
+        `desc` = #{desc},
+        instance_id = #{instanceId},
+        status = #{status},
+        create_time = NOW()
+    </insert>
+
+    <select id="searchOfflineMeetingInWeek" parameterType="HashMap" resultType="HashMap">
+        select
+            id,
+            title,
+            DATE_FORMAT(`date`,"%m/%d") as `date`,
+            DATE_FORMAT(`start`,"%H:%i") as `start`,
+            ROUND(TIMESTAMPDIFF(MINUTE,CONCAT(date," ",start),CONCAT(date," ",end))/30) as time,
+            uuid,
+            instance_id as instanceId,
+            if(creator_id = #{userId}, "true", "false") as isCreator,
+            `status`
+        from tb_meeting
+        where type = 2
+        and place = #{place}
+        and `status` != 2
+        and date between #{startDate} and #{endDate}
+        <if test="mold == '自分会議'">
+            and JSON_CONTAINS(members, CAST(#{userId} as char))
+        </if>
+    </select>
+
+    <select id="searchMeetingInfo" parameterType="long" resultType="HashMap">
+        select
+            m.title,
+            m.date,
+            m.place,
+            DATE_FORMAT(m.`start`,'%H:%i') as `start`,
+            DATE_FORMAT(m.`end`,'%H:%i') as `end`,
+            m.status,
+            CONCAT( "[", GROUP_CONCAT( JSON_OBJECT ( "name", u.name, "photo", u.photo ) SEPARATOR "," ), "]" ) as members
+        from tb_meeting m
+                 left join tb_user u on JSON_CONTAINS ( m.members, CONVERT ( u.id, CHAR ) )
+        where m.id = #{id} AND u.status=1
+    </select>
+
+    <select id="searchCurrentMeetingInfo" parameterType="long" resultType="HashMap">
+        select
+            m.title,
+            m.date,
+            m.place,
+            DATE_FORMAT(m.`start`,'%H:%i') AS `start`,
+            DATE_FORMAT(m.`end`,'%H:%i') AS `end`,
+            m.status,
+            (
+                select
+                    CONCAT("[",GROUP_CONCAT(JSON_OBJECT ("name", u.name, "photo", u.photo) SEPARATOR ","), "]")
+                from tb_user u
+                where JSON_CONTAINS(m.present, CONVERT(u.id,CHAR))
+            ) as  present,
+            (
+                select
+                    CONCAT("[",GROUP_CONCAT(JSON_OBJECT("name", u.name, "photo", u.photo) SEPARATOR ","), "]")
+                from tb_user u
+                where JSON_CONTAINS(m.unpresent, CONVERT(u.id,CHAR))
+            ) as  unpresent
+        from tb_meeting m
+        where m.id = #{id}
+    </select>
+
+    <delete id="deleteMeetingApplication" parameterType="HashMap">
+        delete from tb_meeting
+        where id = ${id} and creator_id = #{creatorId}
+    </delete>
+
+
+    <select id="searchMeetingById" parameterType="long" resultType="HashMap">
+        select
+            m.uuid,
+            m.creator_id as creatorId,
+            IF(creator_id=#{userId},"true","false") as isCreator,
+            m.title,
+            u.name,
+            DATE_FORMAT( m.date, '%Y-%m-%d' ) as date,
+            m.place,
+            DATE_FORMAT( m.START, '%H:%i' ) as start,
+            DATE_FORMAT( m.END, '%H:%i' ) as end,
+            m.type,
+            m.status,
+            m.desc,
+            m.instance_id as instanceId
+        from tb_meeting m
+        join tb_user u on m.creator_id = u.id
+        where m.id = #{id} and u.status = 1
+    </select>
+
+    <select id="searchOnlineMeetingByPage" parameterType="HashMap" resultType="HashMap">
+        select
+            m.id,
+            m.title,
+            u.`name` as creatorName,
+            m.date,
+            DATE_FORMAT(m.`start`,'%H:%i') as `start`,
+            DATE_FORMAT(m.`end`,'%H:%i') as `end`,
+            JSON_LENGTH(m.members) as num,
+            m.`status`,
+            m.`desc`,
+            if(m.creator_id = #{userId}, 'true', 'false') as isCreator,
+            if(JSON_CONTAINS(m.members, cast(#{userId} as char))=1, 'true', 'false') as mine,
+            m.uuid,
+            m.instance_id AS instanceId
+        from tb_meeting m
+        join tb_user u on m.creator_id = u.id
+        where m.type = 1 and m.`status` != 2
+        <if test="date!=null">
+            and m.date = #{date}
+        </if>
+        <if test="mold=='自分会議'">
+            and JSON_CONTAINS(m.members, cast(#{userId} as char))
+        </if>
+        order by m.id desc
+        limit #{start},#{length}
+    </select>
+
+    <select id="searchOnlineMeetingCount" parameterType="HashMap" resultType="long">
+        select COUNT(*)
+        from tb_meeting
+        where type = 1 and `status` != 2
+        <if test="date!=null">
+            and date = #{date}
+        </if>
+        <if test="mold=='自分会議'">
+            and JSON_CONTAINS(members, cast(#{userId} as char))
+        </if>
+    </select>
+
+    <select id="searchOnlineMeetingMembers" parameterType="HashMap" resultType="HashMap">
+        select
+            u.id,
+            u.`name`,
+            u.photo,
+            if(u.id = #{userId}, 1, 0) as mine
+        from tb_user u
+        join tb_meeting m
+        on JSON_CONTAINS(m.members, cast(u.id as char))
+        where
+        m.id = #{meetingId}
+        and u.status = 1
+        order by mine desc
+    </select>
+
+    <select id="searchCanCheckinMeeting" parameterType="HashMap" resultType="long">
+        select count(*)
+        from tb_meeting
+        where id = #{meetingId}
+        and `status` in(3,4)
+        and NOW() between DATE_SUB(CONCAT(date," ",`start`),INTERVAL 15 MINUTE) and DATE_ADD(CONCAT(date," ",`start`),INTERVAL 5 MINUTE)
+        and JSON_CONTAINS(IFNULL(members,JSON_ARRAY()), cast(#{userId} as char))
+        and NOT JSON_CONTAINS(IFNULL(present,JSON_ARRAY()), cast(#{userId} as char))
+    </select>
+
+    <update id="updateMeetingPresent" parameterType="HashMap">
+        update tb_meeting
+        set present = JSON_ARRAY_APPEND(IFNULL(present,JSON_ARRAY()),'$',#{userId})
+        where id = #{meetingId}
+        and NOW() >= DATE_SUB(CONCAT(date," ",`start`), INTERVAL 15 MINUTE)
+        and NOW() &lt; DATE_SUB(CONCAT(date," ",`end`),INTERVAL 15 MINUTE)
+        and JSON_CONTAINS(IFNULL(members,JSON_ARRAY()), CAST(#{userId} AS CHAR))
+        and not JSON_CONTAINS(IFNULL(present,JSON_ARRAY()),CAST(#{userId} AS CHAR))
+    </update>
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emos.api.db.dao.TbAmectTypeDao">
+
+    <select id="searchAllAmectType" resultType="com.example.emos.api.db.pojo.TbAmectType">
+        select
+               id,
+               type,
+               money,
+               systemic
+        from tb_amect_type
+    </select>
+
+    <select id="searchAmectTypeByPage" parameterType="HashMap" resultType="HashMap">
+        select
+        `at`.id,
+        `at`.type,
+        `at`.money,
+        `at`.systemic,
+        count(a.type_id) as notPay,
+        IF(count(a.id) = 0 and systemic = false ,"true","false") AS canDelete
+        from tb_amect_type `at`
+        left join tb_amect a on `at`.id = a.type_id and a.`status` = 1
+        where 1 = 1
+        <if test="type!=null">
+            and `at`.type like '%${type}%'
+        </if>
+        group by `at`.id
+        limit #{start}, #{length}
+    </select>
+
+    <select id="searchAmectTypeCount" parameterType="HashMap" resultType="long">
+        select count(temp.ct)
+        from (
+            select COUNT(*) as ct
+            from tb_amect_type `at`
+            left join tb_amect a on `at`.id = a.type_id and a.`status` = 1
+            where 1 = 1
+            <if test="type!=null">
+                and `at`.type like '%${type}%'
+            </if>
+            group by `at`.id
+        ) temp
+    </select>
+
+    <insert id="insert" parameterType="com.example.emos.api.db.pojo.TbAmectType">
+        insert into tb_amect_type
+        set
+            type = #{type},
+            money = #{money},
+            systemic = false
+    </insert>
+
+    <select id="searchById" parameterType="int" resultType="HashMap">
+        select
+               `type`,
+               money,
+               systemic
+        from tb_amect_type
+        where id = #{id}
+    </select>
+
+    <update id="update" parameterType="HashMap">
+        update tb_amect_type
+        set type = #{type},
+            money = #{money}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAmectTypeByIds">
+        delete from tb_amect_type
+        where systemic = false
+        and id in
+        <foreach collection="array" open="(" separator="," close=")" item="one">
+            #{one}
+        </foreach>
+    </delete>
+</mapper>

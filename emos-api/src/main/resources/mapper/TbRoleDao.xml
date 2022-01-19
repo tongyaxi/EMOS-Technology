@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emos.api.db.dao.TbRoleDao">
+    <select id="searchAllRole" resultType="HashMap">
+        select id,role_name as roleName
+        from tb_role
+        order by id
+    </select>
+
+    <select id="searchRoleByPage" parameterType="HashMap" resultType="HashMap">
+        select
+            r.id,
+            r.role_name as roleName,
+            json_length(r.permissions) as permissions,
+            count(u.id) as users,
+            r.`desc`,
+            r.systemic
+        from tb_role r
+                 left join tb_user u on JSON_CONTAINS(u.role, cast(r.id as char))
+        where 1 = 1
+        <if test="roleName != null">
+            and r.role_name like '%${roleName}%'
+        </if>
+        group by r.id
+        order by r.id
+        limit #{start},#{length}
+    </select>
+
+    <select id="searchRoleCount" parameterType="HashMap" resultType="long">
+        select count(*)
+        from
+        (
+            select r.id
+            from tb_role r
+                     left join tb_user u on JSON_CONTAINS(u.role, cast(r.id as char))
+            where 1 =1
+            <if test="roleName != null">
+                and r.role_name like '%${roleName}%'
+            </if>
+            group by r.id) as temp
+    </select>
+
+    <insert id="insert" parameterType="com.example.emos.api.db.pojo.TbRole">
+        insert into tb_role
+        set role_name = #{roleName},
+        permissions = #{permissions}
+        <if test="desc != null">
+            ,`desc` = #{desc}
+        </if>
+    </insert>
+
+    <select id="searchRoleById" parameterType="int" resultType="HashMap">
+        select
+            id,
+            role_name as roleName,
+            permissions,
+            `desc`,
+            default_permissions as defaultPermissions
+        from tb_role
+        where id = #{id}
+    </select>
+
+    <select id="searchUserIdByRoleId" parameterType="int" resultType="int">
+        select u.id
+        from tb_user u
+        join tb_role r on JSON_CONTAINS(u.role, cast(r.id as char))
+        where r.id = #{id}
+    </select>
+
+    <update id="update" parameterType="com.example.emos.api.db.pojo.TbRole">
+        update tb_role
+        set role_name = #{roleName},
+            permissions = #{permissions},
+            `desc` = #{desc}
+        where id = #{id} and id != 0
+    </update>
+
+    <select id="searchDeleteRoleInfo" resultType="boolean">
+        select if(sum(temp.users) > 0, false, true) as result
+        from
+            (select r.id,count(r.id) as users
+             from tb_role r
+                      join tb_user u on JSON_CONTAINS(u.role, cast(r.id as char))
+             where r.id in
+             <foreach collection="array" open="(" separator="," close=")" item="one">
+                 #{one}
+             </foreach>
+             group by r.id) temp;
+    </select>
+
+    <delete id="deleteRoleByIds">
+        delete from tb_role
+        where id in
+        <foreach collection="array" open="(" separator="," close=")" item="one">
+            #{one}
+        </foreach>
+        and systemic = false;
+    </delete>
+</mapper>

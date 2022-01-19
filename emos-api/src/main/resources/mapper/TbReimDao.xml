@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emos.api.db.dao.TbReimDao">
+
+    <select id="searchReimByPage" parameterType="HashMap" resultType="HashMap">
+        select
+            r.id,
+            u.id,
+            u.`name`,
+            d.dept_name as deptName,
+            r.content,
+            r.amount,
+            r.anleihen,
+            r.balance,
+            r.type_id as typeId,
+            r.`status`,
+            DATE_FORMAT(r.create_time, '%Y-%m-%d') as createTime,
+            if(r.user_id = #{currentUserId}, "true", "false") as mine
+        from tb_reim r
+        join tb_user u on r.user_id = u.id
+        join tb_dept d on u.dept_id = d.id
+        where 1 = 1
+        <if test="deptId != null">
+            and u.dept_id = #{deptId}
+        </if>
+        <if test="typeId != null">
+            and r.type_id = #{typeId}
+        </if>
+        <if test="status != null">
+            and r.`status` = #{status}
+        </if>
+        <if test="userId != null">
+            and u.id = #{userId}
+        </if>
+        <if test="name != null">
+            and u.name like '%${name}%'
+        </if>
+        <if test="startDate != null &amp; endDate != null">
+            and r.create_time between #{startDate} and #{endDate}
+        </if>
+        order by r.id desc
+        limit #{start},#{length}
+    </select>
+
+    <select id="searchReimCount" parameterType="HashMap" resultType="long">
+        select COUNT(*)
+        from tb_reim r
+        join tb_user u on r.user_id = u.id
+        join tb_dept d on d.id = u.dept_id
+        where 1=1
+        <if test="deptId!=null">
+            and u.dept_id = #{deptId}
+        </if>
+        <if test="typeId!=null">
+            and r.type_id = #{typeId}
+        </if>
+        <if test="status!=null">
+            and r.`status` = #{status}
+        </if>
+        <if test="userId!=null">
+            and u.id = #{userId}
+        </if>
+        <if test="name!=null">
+            and u.name like '%${name}%'
+        </if>
+        <if test="startDate!=null &amp; endDate!=null">
+            and r.create_time between #{startDate} and #{endDate}
+        </if>
+    </select>
+
+    <update id="updateReimInstanceId" parameterType="HashMap">
+        update tb_reim
+        set instance_id = #{instanceId}
+        where id = #{id}
+    </update>
+
+    <insert id="insert" parameterType="com.example.emos.api.db.pojo.TbReim" useGeneratedKeys="true" keyProperty="id">
+        insert into tb_reim
+        set user_id = #{userId},
+            content = #{content},
+            amount = #{amount},
+            anleihen = #{anleihen},
+            balance = #{balance},
+            type_id = #{typeId},
+            status = #{status},
+            create_time = NOW()
+    </insert>
+
+    <select id="searchReimById" parameterType="HashMap" resultType="HashMap">
+        select
+        r.instance_id as instanceId,
+        d.dept_name as dept,
+        u.`name`,
+        DATE_FORMAT( r.create_time, '%Y-%m-%d' ) as `date`,
+        r.content,
+        r.amount,
+        r.balance,
+        r.anleihen
+        from tb_reim r
+        join tb_user u on r.user_id = u.id
+        join tb_dept d on d.id = u.dept_id
+        where r.id = #{id}
+        <if test="userId!=null">
+            and r.user_id = #{userId}
+        </if>
+    </select>
+
+    <select id="searchInstanceIdById" parameterType="int" resultType="String">
+        select instance_id as instanceId
+        from tb_reim
+        where id = #{id}
+    </select>
+
+    <delete id="deleteReimById" parameterType="HashMap">
+        delete from tb_reim
+        where id = #{id}
+          and user_id = #{userId}
+          and status in(1,2)
+    </delete>
+
+
+</mapper>

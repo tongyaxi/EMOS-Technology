@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emos.api.db.dao.TbUserDao">
+    <select id="login" parameterType="HashMap" resultType="Integer">
+        select id
+        from tb_user
+        where username = #{username}
+        and password = HEX(AES_ENCRYPT(#{password},#{username}))
+        limit 1;
+    </select>
+
+    <select id="searchUserPermissions" parameterType="int" resultType="String">
+        select distinct p.permission_name
+        from tb_user u
+                 join tb_role r on JSON_CONTAINS(u.role, CAST(r.id as char))
+                 join tb_permission p on JSON_CONTAINS(r.permissions, CAST(p.id as char))
+        where u.id = #{userId}
+          and u.status = 1
+    </select>
+
+    <select id="searchUserSummary" parameterType="int" resultType="HashMap">
+        SELECT u.name, u.photo, d.dept_name AS deptName
+        FROM tb_user u LEFT JOIN tb_dept d ON u.dept_id=d.id
+        WHERE u.id=#{userId} AND u.status=1
+    </select>
+
+    <update id="updatePassword" parameterType="HashMap">
+        update tb_user
+        set password = HEX(AES_ENCRYPT(#{password}, username))
+        where id = #{userId}
+    </update>
+
+    <select id="searchUserByPage" parameterType="HashMap" resultType="HashMap">
+        select
+               distinct u.id,
+               u.username,
+               u.sex,
+               u.tel,
+               u.email,
+               u.hiredate,
+               (select GROUP_CONCAT(role_name SEPARATOR '，') from tb_role where JSON_CONTAINS(u.role, CAST(id as char))) as roles,
+               d.dept_name deptName,
+               u.status,
+               u.root
+        from tb_user u join tb_role r on JSON_CONTAINS(u.role, cast(r.id as char))
+                       left join tb_dept d on u.dept_id = d.id
+        where 1 = 1
+        <if test="username!=null">
+            and u.username like '%${username}%'
+        </if>
+        <if test="sex!=null">
+            and u.sex = #{sex}
+        </if>
+        <if test="role!=null">
+            and r.role_name = #{role}
+        </if>
+        <if test="deptId!=null">
+            and d.id = #{deptId}
+        </if>
+        <if test="status!=null">
+            and u.status = #{status}
+        </if>
+        limit #{start},#{length}
+    </select>
+    <select id="searchUserCount" parameterType="HashMap" resultType="long">
+        select
+        count(distinct u.id)
+        from tb_user u join tb_role r on JSON_CONTAINS(u.role, cast(r.id as char))
+        where 1 = 1
+        <if test="username!=null">
+            and u.username like '%${username}%'
+        </if>
+        <if test="sex!=null">
+            and u.sex = #{sex}
+        </if>
+        <if test="role!=null">
+            and r.role_name = #{role}
+        </if>
+        <if test="deptId!=null">
+            and u.dept_id = #{deptId}
+        </if>
+        <if test="status!=null">
+            and u.status = #{status}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="com.example.emos.api.db.pojo.TbUser">
+        insert into tb_user
+        set
+        <if test="username!=null">
+            username = #{username},
+        </if>
+        <if test="password!=null">
+            password = HEX(AES_ENCRYPT(#{password},#{username})),
+        </if>
+        <if test="openId!=null">
+            open_id = #{openId},
+        </if>
+        <if test="nickname!=null">
+            nickname = #{nickname},
+        </if>
+        <if test="photo!=null">
+            photo = #{photo},
+        </if>
+        <if test="name!=null">
+            name = #{name},
+        </if>
+        <if test="sex!=null">
+            sex = #{sex},
+        </if>
+        <if test="tel!=null">
+            tel = #{tel},
+        </if>
+        <if test="email!=null">
+            email = #{email},
+        </if>
+        <if test="hiredate!=null">
+            hiredate = #{hiredate},
+        </if>
+        role = #{role},
+        <if test="root!=null">
+            root = #{root},
+        </if>
+        <if test="deptId!=null">
+            dept_id = #{deptId},
+        </if>
+        status = #{status},
+        create_time = #{createTime}
+    </insert>
+
+    <select id="searchUserById" parameterType="int" resultType="HashMap">
+        select id, username, name, sex, tel, email, hiredate, role, dept_id as deptId, status,
+               AES_DECRYPT(UNHEX(password),username) as password
+        from tb_user
+        where id = #{userId}
+    </select>
+
+    <update id="update" parameterType="HashMap">
+        update tb_user
+        set
+        <if test="username != null and password != null">
+            username = #{username},
+            password = HEX(AES_ENCRYPT(#{password},#{username})),
+        </if>
+        <if test="name != null">
+            name = #{name},
+        </if>
+        <if test="sex != null">
+            sex = #{sex},
+        </if>
+        <if test="tel != null">
+            tel = #{tel},
+        </if>
+        <if test="email != null">
+            email = #{email},
+        </if>
+        <if test="hiredate != null">
+            hiredate = #{hiredate},
+        </if>
+        <if test="role != null">
+            role = #{role},
+        </if>
+        <if test="deptId != null">
+            dept_id = #{deptId},
+        </if>
+        id = id
+        where id = #{userId}
+    </update>
+
+    <delete id="deleteUserByIds">
+        delete from tb_user
+        where id in
+        <foreach collection="array" open="(" separator="," close=")" item="one">
+            #{one}
+        </foreach>
+        and root = false
+    </delete>
+
+    <select id="searchIdByOpenId" parameterType="String" resultType="Integer">
+        SELECT id FROM tb_user WHERE open_id=#{openId} AND status = 1
+    </select>
+
+    <select id="searchUserInfo" parameterType="int" resultType="HashMap">
+        select
+            u.open_id as openId,
+            u.nickname,
+            u.name,
+            u.photo,
+            u.sex,
+            u.tel,
+            u.email,
+            d.dept_name as dept,
+            u.hiredate,
+            u.status,
+            (select GROUP_CONCAT(role_name separator "，") from tb_role where JSON_CONTAINS (u.role, CONVERT (id, char))) as roles
+        from tb_user u
+        left join tb_dept d on u.dept_id = d.id
+        where u.id = #{userId} and u.status = 1
+    </select>
+    <select id="searchDeptManagerId" parameterType="int" resultType="Integer">
+        select
+        u2.id
+        from tb_user u1 join tb_user u2 on u1.dept_id=u2.dept_id
+        join tb_role r on JSON_CONTAINS(u2.role, CAST(r.id as char))
+        where u1.id = #{id} and r.id=2 and u1.status = 1 and u2.status = 1
+        order by u2.create_time desc
+        limit 1
+    </select>
+    <select id="searchGmId" resultType="Integer">
+        select
+        u.id
+        from tb_user u
+        join tb_role r on JSON_CONTAINS(u.role, CAST(r.id as char))
+        where r.id=1 and u.status = 1
+        order by u.create_time desc
+        limit 1
+    </select>
+
+    <select id="searchAllUser" resultType="HashMap">
+        select id,`name`
+        from tb_user
+        where status = 1
+    </select>
+
+    <select id="searchUserRoles" parameterType="int" resultType="String">
+        select
+               r.role_name as roleName
+        from tb_user u
+        join tb_role r
+        on JSON_CONTAINS(u.role, cast(r.id as char))
+        where u.id = #{userId}
+    </select>
+
+    <select id="searchNameAndDept" parameterType="int" resultType="HashMap">
+        select
+            u.name,
+            d.dept_name AS dept
+        from tb_user u
+        left join tb_dept d on u.dept_id = d.id
+        where u.id = #{userId}
+          and u.status = 1
+    </select>
+</mapper>

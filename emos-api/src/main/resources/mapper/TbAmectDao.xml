@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emos.api.db.dao.TbAmectDao">
+
+    <select id="searchAmectByPage" parameterType="HashMap" resultType="HashMap">
+        select
+            a.id,
+            a.uuid,
+            `at`.type,
+            u.`name`,
+            d.dept_name as deptName,
+            a.amount,
+            a.`status`,
+            DATE_FORMAT(a.create_time,'%Y-%m-%d %H:%i') as createTime,
+            if(a.user_id = 17,'true','false') as mine,
+            a.reason
+        from tb_amect a
+        join tb_amect_type `at` on a.type_id = `at`.id
+        join tb_user u on a.user_id = u.id
+        join tb_dept d on u.dept_id = d.id
+        where 1 = 1
+        <if test="userId != null">
+            and u.id = #{userId}
+        </if>
+        <if test="name != null">
+            and u.name like '%${name}%'
+        </if>
+        <if test="deptId != null">
+            and u.dept_id = #{deptId}
+        </if>
+        <if test="typeId != null">
+            and `at`.id = #{typeId}
+        </if>
+        <if test="startDate != null &amp; endDate != null">
+            and a.create_time BETWEEN #{startDate} AND #{endDate}
+        </if>
+        <if test="status != null">
+            and a.`status` = #{status}
+        </if>
+        order by a.id desc
+        limit #{start}, #{length}
+    </select>
+
+    <select id="searchAmectCount" parameterType="HashMap" resultType="long">
+        select COUNT(*)
+        from tb_amect a
+        join tb_amect_type `at` on a.type_id = `at`.id
+        join tb_user u on u.id = a.user_id
+        join tb_dept d on u.dept_id = d.id
+        where 1=1
+        <if test="userId != null">
+            and u.id = #{userId}
+        </if>
+        <if test="name != null">
+            and u.name like '%${name}%'
+        </if>
+        <if test="deptId != null">
+            and u.dept_id = #{deptId}
+        </if>
+        <if test="typeId != null">
+            and at.id = #{typeId}
+        </if>
+        <if test="startDate != null &amp; endDate != null">
+            and a.create_time BETWEEN #{startDate} AND #{endDate}
+        </if>
+        <if test="status!=null">
+            and a.`status` = #{status}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="com.example.emos.api.db.pojo.TbAmect">
+        insert into tb_amect
+        set uuid = #{uuid},
+            user_id = #{userId},
+            amount = #{amount},
+            type_id = #{typeId},
+            reason = #{reason},
+            status = 1
+    </insert>
+
+    <select id="searchAmectById" parameterType="int" resultType="HashMap">
+        select
+            uuid,
+            user_id as userId,
+            amount,
+            type_id as typeId,
+            reason
+        from tb_amect
+        where id = #{id}
+    </select>
+
+    <update id="update" parameterType="HashMap">
+        update tb_amect
+        set amount = #{amount},
+            type_id = #{typeId},
+            reason = #{reason}
+        where id = #{id}
+        and status != 2
+    </update>
+
+    <delete id="deleteAmectByIds">
+        delete from tb_amect
+        where status != 2
+        and id in
+        <foreach collection="array" open="(" separator="," close=")" item="one">
+            #{one}
+        </foreach>
+    </delete>
+
+    <select id="searchAmectByCondition" parameterType="HashMap" resultType="HashMap">
+        select
+            uuid,
+            amount,
+            prepay_id as prepayId,
+            `status`
+        from tb_amect
+        where id = #{amectId}
+        and user_id = #{userId}
+        <if test="status!=null">
+            and `status` = #{status}
+        </if>
+    </select>
+
+    <update id="updatePrepayId" parameterType="HashMap">
+        update tb_amect
+        set prepay_id = #{prepayId}
+        where id = #{amectId} and status = 1
+    </update>
+
+    <update id="updateStatus" parameterType="HashMap">
+        update tb_amect
+        set status = #{status}
+        where uuid = #{uuid}
+    </update>
+
+    <select id="searchUserIdByUUID" parameterType="String" resultType="Integer">
+        select user_id as userId
+        from tb_amect
+        where uuid = #{uuid}
+    </select>
+
+</mapper>
